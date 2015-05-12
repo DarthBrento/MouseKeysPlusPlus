@@ -108,14 +108,14 @@ Menu, Tray, Add
 Menu, Tray, Add , %trayExitLabel%, ExitSub
 Menu, Tray, Tip , MouseKeys++`nActive
 Menu, Tray, Default , %trayEnabledLabel%
-Menu, Tray, Icon, mousekeys++.ico,,1
+Menu, Tray, Icon, files\mousekeys++.ico,,1
 
 ;; ***
 ;; GUI
 ;; ***
 
 ;; Mouse keys
-Gui, settings:Add, Picture, x238 y20 w200 h-1 , mouse.gif
+Gui, settings:Add, Picture, x238 y20 w200 h-1 , files\mouse.gif
 Gui, settings:Add, Button, x260 y60 w50 h50 gOpenSetKey vSetKeyClick, %HotkeyClick%
 Gui, settings:Add, Button, x360 y60 w50 h50 gOpenSetKey vSetKeyRightclick, %HotkeyRightclick%
 
@@ -176,7 +176,7 @@ Gui, settings:Add, Button, x20 y300 h20 gResetToDefault, Reset all settings
 ;; Info GUI
 ;; ********
 
-Gui, info:Add, Pic, w100 h-1 x10 y10, mousekeys++.ico
+Gui, info:Add, Pic, w100 h-1 x10 y10, files\mousekeys++.ico
 Gui, info:Font, s20,
 Gui, info:Add, Text, x120 y20, MouseKeys++
 Gui, info:Font,
@@ -185,7 +185,7 @@ Gui, info:Add, Text, x120, Author: Benedikt Schneyer
 Gui, info:Add, Text, x500 yp+0, Version: %VERSION%
 Gui, info:Add, Link, x120, Any Feedback? <a href="mailto:MouseKeys++@schneyer.com">Contact me</a>
 Gui, info:Add, Link, x500 yp+0 , Like it? <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=H6D2YMDPLV69S">Buy me a beer</a>
-Gui, info:Add, link, x120, For more infos, updates and other stuff visit <a href="http://djquad.com/mousekeys-plus-plus">http://djquad.com/mousekeys/</a>.
+Gui, info:Add, link, x120, For more infos, updates and other stuff visit our <a href="http://djquad.com/mousekeys-plus-plus">Project Page</a> or on <a href="https://github.com/DarthBrento/MouseKeysPlusPlus">GitHub</a>.
 
 return
 
@@ -244,7 +244,7 @@ ToggleAutostart:
 	Autostart := !Autostart
 	IniWrite, %Autostart%, %configFile%, General, Autostart
 	If (Autostart)
-		FileCreateShortcut, %A_ScriptFullPath%, %A_Startup%\MouseKeys++.lnk , %A_WorkingDir%,, Improved MouseKeys tool ,%A_WorkingDir%\mousekeys++.ico
+		FileCreateShortcut, %A_ScriptFullPath%, %A_Startup%\MouseKeys++.lnk , %A_WorkingDir%,, Improved MouseKeys tool ,%A_WorkingDir%\files\mousekeys++.ico
 	Else
 		FileDelete, %A_Startup%\MouseKeys++.lnk
 return
@@ -480,14 +480,14 @@ ActionToggleEnable:
 		if (TrayBalloon)
 			TrayTip , MouseKeys++, suspended
 		If (playSound)
-			SoundPlay, enabled.wav
+			SoundPlay, files\enabled.wav
 	} else
 	{
 		Menu, Tray, Tip , MouseKeys++`nactive
 		if (TrayBalloon)
 			TrayTip , MouseKeys++, activated
 		If (playSound)
-			SoundPlay, disabled.wav
+			SoundPlay, files\disabled.wav
 	}
 return
 
