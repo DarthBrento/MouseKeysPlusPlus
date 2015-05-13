@@ -211,6 +211,7 @@ return
 SetKeySubmit:
 	action := SubStr(A_GuiControl, 10)
 	setHotkey(%A_GuiControl%,action)
+	Gui, settings:-disabled
 	Gui, setkey:destroy
 return
 
