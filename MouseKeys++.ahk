@@ -97,6 +97,7 @@ FileCreateDir, files
 FileInstall, files\mouse.gif, files\mouse.gif
 FileInstall, files\enabled.wav, files\enabled.wav
 FileInstall, files\mousekeys++.ico, files\mousekeys++.ico
+FileInstall, files\mousekeys++grey.ico, files\mousekeys++grey.ico
 FileInstall, files\disabled.wav, files\disabled.wav
 
 ;; *********
