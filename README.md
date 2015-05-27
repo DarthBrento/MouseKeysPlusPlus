@@ -10,10 +10,10 @@ MouseKeys++ is a free and open source Windows program that emulates mouse moveme
 
 #### ... compile it yourself
 
-1. Download [Autohotkey](http://ahkscript.org)
-2. Download the source (.ahk file)
-3. Download the files directory and place it with the source file
-4. Compile
+1. Download [Autohotkey](http://ahkscript.org) and install
+2. Download the source (.ahk) files
+3. Download the files directory and place it in the same directory as the source files
+4. Compile it or run it
 
 ### Support development
 

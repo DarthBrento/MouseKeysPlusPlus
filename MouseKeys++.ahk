@@ -17,6 +17,7 @@ CoordMode Mouse, Screen
 ;; prevent all natural actions of the keys
 #UseHook
 #InstallKeybdHook
+#InstallMouseHook
 
 ;; ***************
 ;; global settings
@@ -26,17 +27,25 @@ CoordMode Mouse, Screen
 mouseMoveInterval := 15
 
 ;; version
-VERSION := "0.9.0.0"
+VERSION := "0.9.5.0"
 
 ;; name of the config file
 configFile := "settings.ini"
+
+;; mouseEvent codes
+mouseEventLeftDown := 0x0002
+mouseEventLeftUp := 0x0004
+mouseEventRightDown := 0x0008
+mouseEventRightUp := 0x0010
+mouseEventMiddleDown := 0x0020
+mouseEventMiddleUp := 0x0040
 
 ;; ***********
 ;; init config
 ;; ***********
 
 ;; possible actions and their default keys
-actions := {"Click":"NumpadClear","Doubleclick":"NumpadAdd","Right":"NumpadRight","UpRight":"NumpadPgUp","Up":"NumpadUp","UpLeft":"NumpadHome","Left":"NumpadLeft","DownLeft":"NumpadEnd","Down":"NumpadDown","DownRight":"NumpadPgDn","Rightclick":"NumpadSub","WheelUp":"PgUp","WheelDown":"PgDn","ToggleEnable":"Pause","DragLeft":"NumpadIns","DragMiddle":"[ none ]","DragRight":"[ none ]"}
+actions := {"Click":"NumpadClear","Doubleclick":"NumpadAdd","Right":"NumpadRight","UpRight":"NumpadPgUp","Up":"NumpadUp","UpLeft":"NumpadHome","Left":"NumpadLeft","DownLeft":"NumpadEnd","Down":"NumpadDown","DownRight":"NumpadPgDn","Rightclick":"NumpadSub","WheelUp":"PgUp","WheelDown":"PgDn","ToggleEnable":"Pause","DragLeft":"NumpadIns","DragMiddle":"[ none ]","DragRight":"[ none ]","AltTab":"[ none ]","Middleclick":"[ none ]"}
 
 ;; load keys
 Hotkey, IfWinNotActive, MouseKeys++ - enter key
@@ -68,6 +77,9 @@ IniRead, AsAdmin, %configFile%, General, AsAdmin , 0
 IniRead, Autostart, %configFile%, General, Autostart , 0
 IniRead, TrayClickStart, %configFile%, General, TrayClickStart , 1
 
+;; load Advanced
+IniRead, useMouseEvent, %configFile%, Advanced, useMouseEvent , 1
+IniRead, logWindow, %configFile%, Advanced, logWindow , 0
 
 ;; ************
 ;; run as admin
@@ -104,10 +116,6 @@ FileInstall, files\disabled.wav, files\disabled.wav
 ;; Tray menu
 ;; *********
 
-;trayEnabledLabel := "&Enabled (E)"
-;traySettingsLabel := "&Settings (S)"
-;trayInfoLabel := "&Info (I)"
-;trayExitLabel := "&Exit (X)"
 
 ;; tooltip
 OnMessage(0x200, "GUITT")
@@ -141,6 +149,11 @@ Gui, trayMenu:Add, Button, yp+27 w110 h30 gShowInfo, Info
 Gui, trayMenu:Add, Button, yp+27 w110 h30 gExitSub, Exit
 
 ;; old tray menu, puts script on hold while active
+;trayEnabledLabel := "&Enabled (E)"
+;traySettingsLabel := "&Settings (S)"
+;trayInfoLabel := "&Info (I)"
+;trayExitLabel := "&Exit (X)"
+
 ;Menu, Tray, Add , %trayEnabledLabel%, ActionToggleEnable
 ;Menu, Tray, Check , %trayEnabledLabel%
 ;Menu, Tray, Add
@@ -156,7 +169,7 @@ Gui, trayMenu:Add, Button, yp+27 w110 h30 gExitSub, Exit
 ;; ***
 
 ;; add tabs
-Gui, settings:Add, Tab2, -Wrap vTabControl w500 h375, General|Keys|Speed
+Gui, settings:Add, Tab2, -Wrap vTabControl w500 h375, General|Keys|Speed|Advanced
 Gui, settings:Margin, 5, 5
 Gui, settings:Tab, Keys
 
@@ -165,11 +178,17 @@ Gui, settings:Tab, Keys
 
 ;; Mouse keys
 Gui, settings:Add, Picture, x38 y40 w200 h-1 , files\mouse.gif
-Gui, settings:Add, Button, x60 y80 w50 h50 gOpenSetKey vSetKeyClick, %HotkeyClick%
-Gui, settings:Add, Button, x160 y80 w50 h50 gOpenSetKey vSetKeyRightclick, %HotkeyRightclick%
+Gui, settings:Add, Button, x50 y80 w50 h50 gOpenSetKey vSetKeyClick, %HotkeyClick%
+setKeyClick_TT := "Left mouseclick"
+Gui, settings:Add, Button, x110 y80 w50 h50 gOpenSetKey vSetKeyMiddleclick, %HotkeyMiddleclick%
+setKeyMiddleclick_TT := "Middle mouseclick"
+Gui, settings:Add, Button, x170 y80 w50 h50 gOpenSetKey vSetKeyRightclick, %HotkeyRightclick%
+setKeyRightclick_TT := "Right mouseclick"
 
 Gui, settings:Add, Button, x110 y40 w50 h30 gOpenSetKey vSetKeyWheelUp, %HotkeyWheelUp%
+SetKeyWheelUp_TT := "Wheel up"
 Gui, settings:Add, Button, x110 y140 w50 h30 gOpenSetKey vSetKeyWheelDown, %HotkeyWheelDown%
+SetKeyWheelDown_TT := "Wheel down"
 
 Gui, settings:Add, Button, x50 y180 w50 h50 gOpenSetKey vSetKeyUpLeft, %HotkeyUpLeft%
 Gui, settings:Add, Button, x+10 yp+0 w50 h50 gOpenSetKey vSetKeyUp, %HotkeyUp%
@@ -182,17 +201,19 @@ Gui, settings:Add, Button, x+10 yp+0 w50 h50 gOpenSetKey vSetKeyDownRight, %Hotk
 
 
 ;; other keys
-Gui, settings:Add, GroupBox, x260 y40 w240 h145 , Additional
+Gui, settings:Add, GroupBox, x260 y40 w240 h170 , Additional
 Gui, settings:Add, Text, xp+10 yp+20 w120 h20 section, Activation Key:
 Gui, settings:Add, Text, y+5 w120 h20 , Double-Click Key:
 Gui, settings:Add, Text, y+5 w120 h20 , Left Drag:
 Gui, settings:Add, Text, y+5 w120 h20 , Right Drag:
 Gui, settings:Add, Text, y+5 w120 h20 , Middle Drag:
+Gui, settings:Add, Text, y+5 w120 h20 , Alt-Tab:
 Gui, settings:Add, Button, ys-2 w100 h20 gOpenSetKey vSetkeyToggleEnable, %HotkeyToggleEnable%
 Gui, settings:Add, Button, w100 h20 gOpenSetKey vSetkeyDoubleclick, %HotkeyDoubleclick%
 Gui, settings:Add, Button, w100 h20 gOpenSetKey vSetkeyDragLeft, %HotkeyDragLeft%
 Gui, settings:Add, Button, w100 h20 gOpenSetKey vSetkeyDragRight, %HotkeyDragRight%
 Gui, settings:Add, Button, w100 h20 gOpenSetKey vSetkeyDragMiddle, %HotkeyDragMiddle%
+Gui, settings:Add, Button, w100 h20 gOpenSetKey vSetkeyAltTab, %HotkeyAltTab%
 
 ;; disable keys
 Gui, settings:Add, GroupBox, xs-10 w240 h85 , Disable Keys
@@ -228,6 +249,14 @@ Gui, settings:Add, edit, w40 h20 disabled vScrollSpeedEdit, %scrollSpeed%
 Gui, settings:Add, slider, ys w300 h20 Range10-500 ToolTip Line5 gSpeedSettingsSubmit vMouseDoubleclickSpeed, %mouseDoubleclickSpeed%
 Gui, settings:Add, slider, w300 h20 Range1-100 ToolTip Line5  gSpeedSettingsSubmit vScrollSpeed, %scrollSpeed%
 
+;; advanced features
+Gui, settings:Tab, Advanced
+Gui, settings:Add, GroupBox, w475 h145 , Advanced Settings
+Gui, settings:Add, Text, xp+10 yp+20, Warning! This settings are for advanced users only.
+Gui, settings:Add, CheckBox, h20 checked%useMouseEvent% gToggleMouseEvent, Use mouseevents
+Gui, settings:Add, CheckBox, h20 checked%logWindow% gToggleLogWindow, Show log window
+
+
 
 ;; General Settings
 Gui, settings:Tab, General
@@ -241,6 +270,7 @@ ToggleAdmin_TT := "Needed to work with system windows like taskmanager, but show
 Gui, settings:Add, CheckBox, h20 checked%autostart% gToggleAutostart vToggleAutostart, Autostart MouseKeys++
 ToggleAutostart_TT := "Autostart MouseKeys++ on Windows startup"
 Gui, settings:Add, Button, y+15 x350 h20 gResetToDefault, Restore default configuration
+
 
 Gui, settings:Tab
 
@@ -266,6 +296,10 @@ Gui, info:Add, Text, x500 yp+0, Version: %VERSION%
 Gui, info:Add, Link, x120, Any Feedback? <a href="mailto:MouseKeys++@schneyer.com">mail</a> or a href="https://twitter.com/DarthBrento">twitter</a>
 Gui, info:Add, Link, x500 yp+0 , Like it? <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=H6D2YMDPLV69S">Buy me a beer</a>
 Gui, info:Add, link, x120, For more infos, updates and other stuff visit our <a href="http://djquad.com/mousekeys-plus-plus">Project Page</a> or on <a href="https://github.com/DarthBrento/MouseKeysPlusPlus">GitHub</a>.
+
+;;startLog
+if (logWindow)
+	Cinit()
 
 return
 
@@ -384,6 +418,20 @@ ToggleAdmin:
 	IniWrite, %AsAdmin%, %configFile%, General, AsAdmin
 return
 
+ToggleMouseEvent:
+	useMouseEvent := !useMouseEvent
+	IniWrite, %useMouseEvent%, %configFile%, Advanced, useMouseEvent
+return
+
+ToggleLogWindow:
+	logWindow := !logWindow
+	IniWrite, %logWindow%, %configFile%, Advanced, logWindow
+	if (logWindow)
+		Cinit()
+	Else
+		Cdestroy()
+return
+
 ;; **************
 ;; Hotkey Actions
 ;; **************
@@ -421,17 +469,48 @@ ActionRight:
 return
 
 ActionDoubleclick:
-	send % getActiveModifier() . "{click}"
-	sleep %mouseDoubleclickSpeed%
-	send % getActiveModifier() . "{click}"
+	Cadd("doubleclick")
+	if (useMouseEvent)
+	{
+		mouseEventClick("Left")
+		sleep %mouseDoubleclickSpeed%
+		mouseEventClick("Left")
+	} else
+	{
+		send % getActiveModifier() . "{click}"
+		sleep %mouseDoubleclickSpeed%
+		send % getActiveModifier() . "{click}"
+	}
 return
 
 ActionClick:
-	send % getActiveModifier() . "{click}"
+	Cadd("click left")
+	if (useMouseEvent)
+	{
+		mouseEventClick("Left")
+	}
+	else
+		send % getActiveModifier() . "{click}"
 return
 
 ActionRightclick:
-	send % getActiveModifier() . "{click right}"
+	Cadd("click right")
+	if (useMouseEvent)
+	{
+		mouseEventClick("Right")
+	}
+	else
+		send % getActiveModifier() . "{click right}"
+return
+
+ActionMiddleclick:
+	Cadd("click middle")
+	if (useMouseEvent)
+	{
+		mouseEventClick("Middle")
+	}
+	else
+		send % getActiveModifier() . "{click right}"
 return
 
 ActionWheelUp:
@@ -443,15 +522,19 @@ ActionWheelDown:
 return
 
 ActionDragLeft:
-	drag("L")
+	drag("Left")
 return
 
 ActionDragMiddle:
-	drag("M")
+	drag("Middle")
 return
 
 ActionDragRight:
-	drag("R")
+	drag("Right")
+return
+
+ActionAltTab:
+	run C:\Users\Default\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\Window Switcher.lnk
 return
 
 ActionReload:
@@ -460,6 +543,18 @@ return
 
 ActionDoNothing:
 return
+
+mouseEventClick(button, dir = "")
+{
+	global
+	if (dir != "U")
+	{
+		DllCall("mouse_event", uint, mouseEvent%button%Down, int, 100, int, 0)
+		sleep 15
+	}
+	if (dir != "D")
+		DllCall("mouse_event", uint, mouseEvent%button%Up, int, 100, int, 0)
+}
 
 setHotkey(key, action)
 {
@@ -523,6 +618,7 @@ setHotkey(key, action)
 
 moveWheel(direction,scrollSpeed)
 {
+	Cadd((direction = 1 ? "WheelUp" : "WheelDown") . " press")
 	Loop {
 		wheelKey := getActiveButton()
 
@@ -534,6 +630,7 @@ moveWheel(direction,scrollSpeed)
 		else
 			break
 	}
+	Cadd((direction = 1 ? "WheelUp" : "WheelDown") . " up")
 }
 
 moveMouse(x,y)
@@ -550,11 +647,10 @@ moveMouse(x,y)
 	;; move one pixel instantly
 	xPos += x
 	yPos += y
-	Loop {
-		GetKeyState, keystate, %MovementButtonName%, P
-		if (keystate = "U")
-			break
 
+	Cadd(MovementButtonName . " press down")
+	While GetKeyState(MovementButtonName, "P")
+	{
 		;; acceleration delay
 		if ((A_Index * mouseMoveInterval) >= mouseMoveAccelerationDelay)
 			moveAccel := ((A_Index * mouseMoveInterval) - mouseMoveAccelerationDelay) * (mouseMoveAcceleration / 1000)
@@ -576,15 +672,23 @@ moveMouse(x,y)
 
 		sleep %mouseMoveInterval%
 	}
+	KeyWait, %MovementButtonName%
+	Cadd(MovementButtonName . " press up")
 }
 
 drag(key)
 {
-	If GetKeyState( key . "Button", "P" )
-		d := "up"
+	If GetKeyState( Substr(key,1,1) . "Button")
+		d := "U"
 	else
-		d := "down"
-	send % getActiveModifier() . "{click " . d . " " . key . "}"
+		d := "D"
+
+	if (useMouseEvent)
+		mouseEventClick(key,d)
+	else
+		send % getActiveModifier() . "{click " . d . " " . key . "}"
+
+	Cadd("click " . key . (d = "U" ? "Up" : "Down"))
 }
 
 ;; return active modifier keys
@@ -628,7 +732,6 @@ return
 
 ActionToggleEnable:
 	suspend
-	;Menu, Tray, ToggleCheck , %trayEnabledLabel%
 	if (A_IsSuspended)
 	{
 		GuiControl, trayMenu:, TrayMenuEnable, Enable
@@ -698,3 +801,5 @@ GUITT(){
 		}
 	return
 }
+
+#Include consolelog.ahk
