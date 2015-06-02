@@ -8,6 +8,8 @@ MouseKeys++ is a free and open source Windows program that emulates mouse moveme
 1. Download the MouseKeys++.exe file.
 2. Run it. (It's that simple!)
 
+Note: The exe is compressed via mpress to reduce size.
+
 #### ... compile it yourself
 
 1. Download [Autohotkey](http://ahkscript.org) and install

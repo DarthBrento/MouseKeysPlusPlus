@@ -27,7 +27,7 @@ CoordMode Mouse, Screen
 mouseMoveInterval := 15
 
 ;; version
-VERSION := "0.9.5.0"
+VERSION := "0.9.6.0"
 
 ;; name of the config file
 configFile := "settings.ini"
@@ -79,6 +79,7 @@ IniRead, TrayClickStart, %configFile%, General, TrayClickStart , 1
 
 ;; load Advanced
 IniRead, useMouseEvent, %configFile%, Advanced, useMouseEvent , 1
+IniRead, useMouseMoveEvent, %configFile%, Advanced, useMouseMoveEvent , 0
 IniRead, logWindow, %configFile%, Advanced, logWindow , 0
 
 ;; ************
@@ -253,7 +254,9 @@ Gui, settings:Add, slider, w300 h20 Range1-100 ToolTip Line5  gSpeedSettingsSubm
 Gui, settings:Tab, Advanced
 Gui, settings:Add, GroupBox, w475 h145 , Advanced Settings
 Gui, settings:Add, Text, xp+10 yp+20, Warning! This settings are for advanced users only.
-Gui, settings:Add, CheckBox, h20 checked%useMouseEvent% gToggleMouseEvent, Use mouseevents
+Gui, settings:Add, CheckBox, h20 checked%useMouseEvent% gToggleMouseEvent, Use mouseevents for clicks
+Gui, settings:Add, CheckBox, h20 checked%useMouseMoveEvent% gToggleMouseMoveEvent vTogglemouseMoveEvent, Use mouseevents for movement
+ToggleMouseMoveEvent_TT := "lacks precision, but may work where default mode does not."
 Gui, settings:Add, CheckBox, h20 checked%logWindow% gToggleLogWindow, Show log window
 
 
@@ -302,6 +305,16 @@ if (logWindow)
 	Cinit()
 
 return
+
+/*
+    ######## ##     ## ########  ######     		######## ##    ## ########
+    ##        ##   ##  ##       ##    ##    		##       ###   ## ##     ##
+    ##         ## ##   ##       ##          		##       ####  ## ##     ##
+    ######      ###    ######   ##          		######   ## ## ## ##     ##
+    ##         ## ##   ##       ##          		##       ##  #### ##     ##
+    ##        ##   ##  ##       ##    ##    		##       ##   ### ##     ##
+    ######## ##     ## ########  ######     		######## ##    ## ########
+*/
 
 ;; ********
 ;; Settings
@@ -423,6 +436,11 @@ ToggleMouseEvent:
 	IniWrite, %useMouseEvent%, %configFile%, Advanced, useMouseEvent
 return
 
+ToggleMouseMoveEvent:
+	useMouseMoveEvent := !useMouseMoveEvent
+	IniWrite, %useMouseMoveEvent%, %configFile%, Advanced, useMouseMoveEvent
+return
+
 ToggleLogWindow:
 	logWindow := !logWindow
 	IniWrite, %logWindow%, %configFile%, Advanced, logWindow
@@ -540,6 +558,30 @@ return
 ActionReload:
 	reload
 return
+
+ActionToggleEnable:
+	suspend
+	if (A_IsSuspended)
+	{
+		GuiControl, trayMenu:, TrayMenuEnable, Enable
+		Menu, Tray, Icon, files\mousekeys++grey.ico,,1
+		Menu, Tray, Tip , MouseKeys++`nsuspended
+		if (TrayBalloon)
+			TrayTip , MouseKeys++, suspended
+		If (playSound)
+			SoundPlay, files\enabled.wav
+	} else
+	{
+		GuiControl, trayMenu:, TrayMenuEnable, Disable
+		Menu, Tray, Icon, files\mousekeys++.ico,,1
+		Menu, Tray, Tip , MouseKeys++`nactive
+		if (TrayBalloon)
+			TrayTip , MouseKeys++, active
+		If (playSound)
+			SoundPlay, files\disabled.wav
+	}
+return
+
 
 ActionDoNothing:
 return
@@ -664,11 +706,28 @@ moveMouse(x,y)
 
 		speed /= (1000 / mouseMoveInterval)
 
+		xBefore := xPos
+		yBefore := yPos
+
 		xPos += x * speed
 		yPos += y * speed
 
+		xPosR := Round(xPos)
+		yPosR := Round(yPos)
+
 		;; i like to move it
-		MouseMove, % Round(xPos) , % Round(yPos) , 2
+		if (useMouseMoveEvent)
+		{
+			;; if we move a pix move a mickey, hacky and lacks precision
+			xMick := (A_Index = 1? x : xPosR - xBefore)
+			yMick := (A_Index = 1? y : yPosR - yBefore)
+
+			DllCall("mouse_event", uint, 0x0001, int, xMick, int, yMick)
+		}
+		else
+			MouseMove, % xPosR , % yPosR , 2
+
+
 
 		sleep %mouseMoveInterval%
 	}
@@ -730,29 +789,6 @@ ShowInfo:
 	Gui, info:Show, center autosize, MouseKeys++ - Info
 return
 
-ActionToggleEnable:
-	suspend
-	if (A_IsSuspended)
-	{
-		GuiControl, trayMenu:, TrayMenuEnable, Enable
-		Menu, Tray, Icon, files\mousekeys++grey.ico,,1
-		Menu, Tray, Tip , MouseKeys++`nsuspended
-		if (TrayBalloon)
-			TrayTip , MouseKeys++, suspended
-		If (playSound)
-			SoundPlay, files\enabled.wav
-	} else
-	{
-		GuiControl, trayMenu:, TrayMenuEnable, Disable
-		Menu, Tray, Icon, files\mousekeys++.ico,,1
-		Menu, Tray, Tip , MouseKeys++`nactive
-		if (TrayBalloon)
-			TrayTip , MouseKeys++, active
-		If (playSound)
-			SoundPlay, files\disabled.wav
-	}
-return
-
 ExitSub:
 ExitApp
 
@@ -780,7 +816,6 @@ ShowRbuttonMenu:
 	Gui, traymenu:Cancel
 return
 
-
 GUITT(){
 	static CurrControl, PrevControl, _TT
 
@@ -801,5 +836,9 @@ GUITT(){
 		}
 	return
 }
+
+F12::
+	MsgBox, % A_ScreenWidth A_ScreenHeight
+return
 
 #Include consolelog.ahk
