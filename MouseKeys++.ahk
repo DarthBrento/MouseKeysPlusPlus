@@ -27,7 +27,7 @@ CoordMode Mouse, Screen
 mouseMoveInterval := 15
 
 ;; version
-VERSION := "0.9.6.0"
+VERSION := "0.9.6.1"
 
 ;; name of the config file
 configFile := "settings.ini"
@@ -279,8 +279,8 @@ Gui, settings:Tab
 
 ;; bottom line
 Gui, settings:Add, Text, y385 x10 R1 section, Benedikt Schneyer
-Gui, settings:Add, Link, x+35 R1, <a href="https://twitter.com/DarthBrento">@DarthBrento</a>
-Gui, settings:Add, Link, x+35 R1, <a href="mailto:MouseKeys++@schneyer.com">MouseKeys++@schneyer.com</a>
+Gui, settings:Add, Link, x+35 R1, <a href="http://djquad.com/mousekeys-plus-plus">Project Page</a>
+Gui, settings:Add, Link, x+35 R1, <a href="mailto:MouseKeys@djquad.com">MouseKeys@djquad.com</a>
 Gui, settings:Add, Link, x+35 R1, <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=H6D2YMDPLV69S">Donate</a> Thanks!
 
 
@@ -291,14 +291,14 @@ Gui, settings:Add, Link, x+35 R1, <a href="https://www.paypal.com/cgi-bin/webscr
 
 Gui, info:Add, Pic, w128 h-1 x10 y10, files\mousekeys++.ico
 Gui, info:Font, s20,
-Gui, info:Add, Text, ys, MouseKeys++
+Gui, info:Add, Text, ys section, MouseKeys++
 Gui, info:Font,
-Gui, info:Add, Text, , MouseKeys++ is a free and open source Windows program that emulates mouse movement from the keyboard. `nThe intended use is for those with physical disabilities who can't grasp, drag, nor click using a physical mouse.
-Gui, info:Add, Text, x120, Author: Benedikt Schneyer
+Gui, info:Add, Text, xs section, MouseKeys++ is a free and open source Windows program that emulates mouse movement from the keyboard. `nThe intended use is for those with physical disabilities who can't grasp, drag, nor click using a physical mouse.
+Gui, info:Add, Text, xs, Author: Benedikt Schneyer
 Gui, info:Add, Text, x500 yp+0, Version: %VERSION%
-Gui, info:Add, Link, x120, Any Feedback? <a href="mailto:MouseKeys++@schneyer.com">mail</a> or a href="https://twitter.com/DarthBrento">twitter</a>
-Gui, info:Add, Link, x500 yp+0 , Like it? <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=H6D2YMDPLV69S">Buy me a beer</a>
-Gui, info:Add, link, x120, For more infos, updates and other stuff visit our <a href="http://djquad.com/mousekeys-plus-plus">Project Page</a> or on <a href="https://github.com/DarthBrento/MouseKeysPlusPlus">GitHub</a>.
+Gui, info:Add, Link, xs, Any Feedback? <a href="mailto:MouseKeys@djquad.com">mail</a>
+Gui, info:Add, Link, x500 yp+0 , Like it? <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=H6D2YMDPLV69S">Donate</a>
+Gui, info:Add, link, xs, For more infos, updates and other stuff visit our <a href="http://djquad.com/mousekeys-plus-plus">Project Page</a> or on <a href="https://github.com/DarthBrento/MouseKeysPlusPlus">GitHub</a>.
 
 ;;startLog
 if (logWindow)
@@ -677,7 +677,7 @@ moveWheel(direction,scrollSpeed)
 
 moveMouse(x,y)
 {
-	global ; to get config
+	global mouseMoveAccelerationDelay, mouseMoveInterval, mouseMoveAcceleration, mouseMoveSpeed, mouseMovespeedMax
 
 	;; get buttonname
 	MovementButtonName := A_ThisHotkey
@@ -726,8 +726,6 @@ moveMouse(x,y)
 		}
 		else
 			MouseMove, % xPosR , % yPosR , 2
-
-
 
 		sleep %mouseMoveInterval%
 	}
