@@ -27,7 +27,7 @@ CoordMode Mouse, Screen
 mouseMoveInterval := 15
 
 ;; version
-VERSION := "0.9.6.1"
+VERSION := "0.9.6.2"
 
 ;; name of the config file
 configFile := "settings.ini"
@@ -677,7 +677,7 @@ moveWheel(direction,scrollSpeed)
 
 moveMouse(x,y)
 {
-	global mouseMoveAccelerationDelay, mouseMoveInterval, mouseMoveAcceleration, mouseMoveSpeed, mouseMovespeedMax
+	global mouseMoveAccelerationDelay, mouseMoveInterval, mouseMoveAcceleration, mouseMoveSpeed, mouseMovespeedMax, useMouseMoveEvent
 
 	;; get buttonname
 	MovementButtonName := A_ThisHotkey
@@ -715,9 +715,13 @@ moveMouse(x,y)
 		xPosR := Round(xPos)
 		yPosR := Round(yPos)
 
+		Cadd(xPosR . " " . xBefore)
+
 		;; i like to move it
 		if (useMouseMoveEvent)
 		{
+			Cadd("Mickey: ")
+
 			;; if we move a pix move a mickey, hacky and lacks precision
 			xMick := (A_Index = 1? x : xPosR - xBefore)
 			yMick := (A_Index = 1? y : yPosR - yBefore)
@@ -725,7 +729,10 @@ moveMouse(x,y)
 			DllCall("mouse_event", uint, 0x0001, int, xMick, int, yMick)
 		}
 		else
+		{
+			Cadd("Move")
 			MouseMove, % xPosR , % yPosR , 2
+		}
 
 		sleep %mouseMoveInterval%
 	}
@@ -836,7 +843,13 @@ GUITT(){
 }
 
 F12::
-	MsgBox, % A_ScreenWidth A_ScreenHeight
+	WinGetActiveStats, Title, Width, Height, X, Y
+
+	MouseMove, Width / 2, Height / 2, 0
+return
+
+F11::
+	DllCall("mouse_event", uint, 0x0001, int, 10, int, 0)
 return
 
 #Include consolelog.ahk
