@@ -715,13 +715,9 @@ moveMouse(x,y)
 		xPosR := Round(xPos)
 		yPosR := Round(yPos)
 
-		Cadd(xPosR . " " . xBefore)
-
 		;; i like to move it
 		if (useMouseMoveEvent)
 		{
-			Cadd("Mickey: ")
-
 			;; if we move a pix move a mickey, hacky and lacks precision
 			xMick := (A_Index = 1? x : xPosR - xBefore)
 			yMick := (A_Index = 1? y : yPosR - yBefore)
@@ -730,7 +726,6 @@ moveMouse(x,y)
 		}
 		else
 		{
-			Cadd("Move")
 			MouseMove, % xPosR , % yPosR , 2
 		}
 
