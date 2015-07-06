@@ -737,6 +737,9 @@ moveMouse(x,y)
 
 drag(key)
 {
+	ButtonName := A_ThisHotkey
+	StringReplace, ButtonName, ButtonName, *
+
 	If GetKeyState( Substr(key,1,1) . "Button")
 		d := "U"
 	else
@@ -747,7 +750,8 @@ drag(key)
 	else
 		send % getActiveModifier() . "{click " . d . " " . key . "}"
 
-	Cadd("click " . key . (d = "U" ? "Up" : "Down"))
+	KeyWait, %ButtonName%
+	Cadd("click " . key . (d = "U" ? "Up" : "Down") . " " . ButtonName)
 }
 
 ;; return active modifier keys
