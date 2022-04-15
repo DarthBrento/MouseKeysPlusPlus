@@ -74,6 +74,7 @@ Hotkey, IfWinNotActive
 IniRead, TrayBalloon, %configFile%, General, BalloonTip , 0
 IniRead, PlaySound, %configFile%, General, PlaySound , 0
 IniRead, AsAdmin, %configFile%, General, AsAdmin , 0
+IniRead, TopPriority, %configFile%, General, TopPriority, 0
 IniRead, Autostart, %configFile%, General, Autostart , 0
 IniRead, TrayClickStart, %configFile%, General, TrayClickStart , 1
 
@@ -92,6 +93,21 @@ if (AsAdmin && not A_IsAdmin)
 	ExitApp
 }
 
+
+;; **************************************
+;; run with higher priority to avoid lags
+;; **************************************
+
+if (TopPriority)
+{
+    if (A_IsAdmin)
+    {
+        Process, Priority, , R
+    } else
+    {
+        Process, Priority, , H
+    }
+}
 
 ;; load speed settings
 IniRead, mouseDoubleclickSpeed, %configFile%, Speed, mouseDoubleclickSpeed , 55
@@ -269,9 +285,11 @@ Gui, settings:Add, CheckBox, xp+10 yp+20 h20 checked%TrayBalloon% gToggleTrayBal
 Gui, settings:Add, CheckBox, h20 checked%PlaySound% gTogglePlaySound, Play Sound on Start/Stop
 Gui, settings:Add, CheckBox, h20 checked%TrayClickStart% gToggleTrayClickStart, Start/Stop on tray icon click
 Gui, settings:Add, CheckBox, h20 checked%asAdmin% gToggleAdmin vToggleAdmin, Run as Admin (recommended)
-ToggleAdmin_TT := "Needed to work with system windows like taskmanager, but shows UAC prompt on start"
+ToggleAdmin_TT := "Needed to work with system windows like taskmanager, but shows UAC prompt on start."
+Gui, settings:Add, CheckBox, h20 checked%topPriority% gTogglePriority vTogglePriority, Run with top priority (recommended)
+TogglePriority_TT := "Gives the process higher priority to avoid lag. Needs to run as administrator to gain realtime (real top) priority."
 Gui, settings:Add, CheckBox, h20 checked%autostart% gToggleAutostart vToggleAutostart, Autostart MouseKeys++
-ToggleAutostart_TT := "Autostart MouseKeys++ on Windows startup"
+ToggleAutostart_TT := "Autostart MouseKeys++ on Windows startup."
 Gui, settings:Add, Button, y+15 x350 h20 gResetToDefault, Restore default configuration
 
 
@@ -376,7 +394,7 @@ ReenableKey:
 	{
 		;; choose first entry
 		GuiControl,settings:choose,DisabledKeys, 1
-	} Else
+	} else
 	{
 		GuiControl, settings:+disabled, ReenableKey
 	}
@@ -429,6 +447,11 @@ return
 ToggleAdmin:
 	AsAdmin := !AsAdmin
 	IniWrite, %AsAdmin%, %configFile%, General, AsAdmin
+return
+
+TogglePriority:
+	TopPriority := !TopPriority
+	IniWrite, %TopPriority%, %configFile%, General, TopPriority
 return
 
 ToggleMouseEvent:
