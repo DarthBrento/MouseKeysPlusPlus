@@ -22,7 +22,3 @@ Note: The exe is compressed via mpress to reduce size.
 - Give Feedback
 - Spread the word
 - [Donate](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=H6D2YMDPLV69S)
-
-### Additional Ressources
-
-[Project page](http://djquad.com/mousekeys-plus-plus/)
